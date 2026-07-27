@@ -152,7 +152,7 @@ eg:\<html lang="zh-CN>
 * 页脚(\<footer>)：细小文字，版权声明，联系信息等
 ## 布局细节
 * main：每个页面中只能用一次，且最直接位于body中，不要嵌套进其他元素
-* section:与article类似，根据上下文可以互相嵌套使用
+* section:与article类似，根据上下文可以互相嵌套使用(article是一个独立文章)
 ## 无语义包装器
 span:行级无语义元素
 div：块级无语义元素（尽量少用）
@@ -174,4 +174,98 @@ hr:生成一条水平分割线（放在结尾）
   >的超链接。
 </p>
 ```
+## 其他常见语义化标签
+figure：表示一个独立的媒体内容
+figcaption：给figure添加标题或说明
+time：表示时间；datetime：给机器读取
+```
+<time datetime="2026-07-27">
+
+2026年7月27日
+
+</time>
+```
+address:表示作者或组织联系方式
+# 补充
+## form(表单相关)
+表单用于让用户向网页提交信息
+* 结构：
+   * 用\<form>包裹
+   * \<input>:是一个空元素，没有结束标签
+  ```
+  //例如：
+  <input type="text">
+  <input type="password">//会自动隐藏
+  <input type="email">//会检查格式
+  <input type="radio">//选择性别
+  ```
+* lable标签:
+   给输入框添加说明
+```
+<label>
+用户名：
+<input type="text">
+</label>
+```
+* button按钮
+```
+<button type="submit">
+登录
+</button>
+```
+* textarea多行文本
+   普通input只能一行，改为textarea包裹可以实现输入多行
+* select下拉选择
+```
+<select>
+
+<option>
+北京
+</option>
+
+<option>
+上海
+</option>
+
+</select>
+```
+## class和id
+区别：class在不同元素间可以重复，但是每个元素的id应只有一个
+## table表格
+```
+<table>
+
+    <tr>
+        <td>内容</td>
+        <td>内容</td>
+    </tr>
+
+</table>
+```
+其中tr是表格行，td是普通单元格  
+注：th是表头单元格，与td不同的是，td用于存放普通数据，th默认加粗且居中，表示标题
+## 表格语义结构
+### 大型网站格式
+table
+
+ |
+ |
+ ├── caption
+ |
+ ├── thead
+ |
+ ├── tbody
+ |
+ └── tfoot
+
+ thead表头区域：表格顶部标题
+ tbody主体区域：表格主要数据
+ tfoot底部区域：通常用于总计、汇总
+ caption表格标题
+ ### 合并单元格
+ * colspan
+   横向合并
+例如：td colspan=2表示占两列
+ * rowspan
+   纵向合并
 
