@@ -136,6 +136,8 @@ p::first-line {
 通常，浏览器会为 HTML 元素应用默认样式，这些样式可能会影响网页的外观。为了确保网页在不同浏览器中具有一致的外观，我们可以使用 CSS 来重置或覆盖这些默认样式。
 # 使用类名
 在 HTML 元素中使用 `class` 属性来指定类名，然后在 CSS 中使用类选择器来定义样式。
+* 一个元素可以有多个class,多个class用空格隔开
+
 # 盒模型
 盒模型是 CSS 中一个重要的概念，它定义了元素的布局和尺寸。每个 HTML 元素都可以看作是一个盒子，包含内容（content）、内边距（padding）、边框（border）和外边距（margin）。
 ## 区块盒子(block)与行内盒子(inline)
@@ -190,3 +192,45 @@ overflow属性
 | center| 居中对齐 |
 | right	| 右对齐 |
 | justify| 两端对齐 |
+## 颜色
+CSS 中常用的是 RGB 颜色模型。
+
+### RGB（Red Green Blue）
+
+RGB 是一种加色模型（Additive Color Model），主要用于电子设备：
+
+- Red（红色）
+- Green（绿色）
+- Blue（蓝色）
+
+例如：
+
+```css
+color: rgb(255, 0, 0);
+```
+RGB特点：
+
+三种颜色的光叠加可以产生其他颜色
+R、G、B 的取值范围通常是 0~255
+三个值都为 0 时为黑色
+三个值都为 255 时为白色
+
+### 十六进制表示颜色
+\#开头，后面接六位数字：前两位表示 Red，中间两位表示 Green，后两位表示 Blue
+
+### Alpha
+透明度
+rgba(red, green, blue, alpha)
+
+### linear-gradient
+梯度
+使用 linear-gradient() 函数可以创建线性渐变背景。它允许你指定多个颜色以及渐变的方向。例如：
+
+```css
+background: linear-gradient(to right, red, blue);
+```
+### hsl
+HSL（Hue, Saturation, Lightness）是一种基于色相、饱和度和亮度的颜色表示方法。它更符合人类对颜色的感知。
+- Hue（色相）：表示颜色的类型，取值范围为 0~360 度，0 度为红色，120 度为绿色，240 度为蓝色。
+- Saturation（饱和度）：表示颜色的纯度，取值范围为 0%~100%，0% 表示灰色，100% 表示纯色。
+- Lightness（亮度）：表示颜色的明暗程度，取值范围为 0%~100%，0% 表示黑色，100% 表示白色。
