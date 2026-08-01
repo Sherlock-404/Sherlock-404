@@ -107,12 +107,15 @@ CSS 选择器用于选择 HTML 元素，以便应用样式。常见的选择器�
     }
     ```
 hover伪类选择器用于选择鼠标悬停在链接上的状态，可以改变链接的颜色、背景等样式。
+![alt text](image.png)
 9. **伪元素选择器**:选择元素的特定部分。
 ```css
 p::first-line {
      font-weight: bold;
 }
 ```
+![1785543844572](image/css/1785543844572.png)
+
 # 常用属性
 ## 文字样式
 | 属性             | 作用   |
@@ -150,23 +153,87 @@ width和height属性可以发挥作用
 不会换行
 ..无作用
 垂直方向的内外边距及边框不会把其他处于inline状态的盒子推开；水平则推开
+* inline-block：
+不会换行,width和height属性可以发挥作用
 ### 内部显示
 决定盒子内元素的布局方式
 ## 盒模型的各部分
 ![1785116586470](image/css/1785116586470.png)
-## 标准盒模型
-例如：
+
+```
+┌───────────────┐
+│    margin     │  外边距
+│ ┌───────────┐ │
+│ │  border   │ │  边框
+│ │ ┌───────┐ │ │
+│ │ │padding│ │ │  内边距
+│ │ │content│ │ │  内容
+│ │ └───────┘ │ │
+│ └───────────┘ │
+└───────────────┘
+```
+
+组成：
+
+* **content（内容区域）**：元素实际显示的内容
+* **padding（内边距）**：内容与边框之间的距离
+* **border（边框）**：包围内容和内边距的线
+* **margin（外边距）**：元素与其他元素之间的距离
+
+---
+
+默认情况下：
 ```css
 .box {
-  width: 350px;
-  height: 150px;
-  margin: 10px;
-  padding: 25px;
-  border: 5px solid black;
+    width: 200px;
+    height: 100px;
+}
+```
+这里设置的是content区域的大小
+
+实际占用宽度：
+
+```
+width + 左右padding + 左右border + 左右margin
+```
+
+例如：
+
+```css
+.box {
+    width: 200px;
+    padding: 20px;
+    border: 5px solid;
 }
 ```
 
+实际宽度：
+
+```
+200 + 20×2 + 5×2 = 250px
+```
+
+---
+
+* box-sizing
+
+```css<!--默认值-->
+box-sizing: content-box;
+```
+特点：
+* width 只包含 content
+* 设置宽高后容易超出预期
+
+```css
+box-sizing: border-box;
+```
+特点：
+* width 包含 content + padding + border
+* 设置的宽度就是最终盒子大小
+
+
 # 处理不同方向的文本
+
 horizontal-tb 书写模式下块向是从上到下的；而 vertical-rl 书写模式下块向是从右到左的。因此，块向维度指的总是区块在页面书写模式下的显示方向。而行向维度指的总是文本方向。
 
 # 溢出
@@ -174,6 +241,7 @@ overflow属性
 默认为visible模式，可以改为scroll，会显示滚动条
 你可以用 overflow 属性指定 x 轴和 y 轴方向的滚动，同时使用两个值进行传递。如果指定了两个关键字，第一个对 overflow-x 生效而第二个对 overflow-y 生效。否则，overflow-x 和 overflow-y 将会被设置成同样的值。例如，overflow: scroll hidden 会把 overflow-x 设置成 scroll，而 overflow-y 则为 hidden。
 如果你只是想让滚动条在有比盒子所能装下更多的内容的时候才显示，那么使用 overflow: auto。此时由浏览器决定是否显示滚动条。
+
 # 值和单位
 ## 数值
 ![1785118052174](image/css/1785118052174.png)

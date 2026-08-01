@@ -306,7 +306,7 @@ address:表示作者或组织联系方式
 
 </select>
 ```
-
+注：可以使用for和id让label与input产生联系
 ## class和id
 
 区别：class在不同元素间可以重复，但是每个元素的id应只有一个
