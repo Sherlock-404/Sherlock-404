@@ -19,5 +19,6 @@ Formula *load_cnf(const char *filename);
 void print_formula(const Formula *formula);
 void free_formula(Formula *formula);
 int is_clause_satisfied(const Clause *clause, const int *assignment);
+int is_formula_satisfied(const Formula *formula, const int *assignment);
 
 #endif

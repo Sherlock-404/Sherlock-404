@@ -106,3 +106,30 @@ void free_formula(Formula *formula)
 
     free(formula);
 }
+
+
+//检查子句是否满足
+int is_clause_satisfied(const Clause *clause, const int *assignment){
+    for(int i=0;i<clause->size;i++){
+        int literal=clause->literals[i];
+        int variable=abs(literal);
+        if ((literal > 0 && assignment[variable] == 1) || (literal < 0 && assignment[variable] == 0)) {
+            return 1; // Clause is satisfied
+        }
+    }
+    return 0; // Clause is not satisfied
+}
+
+
+//检查公式是否满足
+int is_formula_satisfied(const Formula *formula, const int *assignment){
+    if(formula==NULL || assignment==NULL){
+        return 0; // Invalid input
+    }
+    for(int i=0;i<formula->clause_count;i++){
+        if(!is_clause_satisfied(&formula->clauses[i],assignment)){
+            return 0; // Formula is not satisfied
+        }
+    }
+    return 1; // Formula is satisfied
+}
