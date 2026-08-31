@@ -13,10 +13,11 @@ typedef struct Formula
 {
     int variable_count;//变量数
     int clause_count;//子句数
-    Clause *clause;
+    Clause *clauses;
 }Formula;
-Formula *loud_cnf(const char *filename);
-void print_formular(const Formula *formula);
+Formula *load_cnf(const char *filename);
+void print_formula(const Formula *formula);
 void free_formula(Formula *formula);
+int is_clause_satisfied(const Clause *clause, const int *assignment);
 
 #endif

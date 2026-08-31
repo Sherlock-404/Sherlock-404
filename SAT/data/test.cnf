@@ -1,0 +1,5 @@
+c This is a test CNF file
+c Another comment
+p cnf 3 2
+1 -2 3 0
+-1 2 0
