@@ -15,7 +15,10 @@
 //      return 0;
 //  }
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "cnf.h"
+#include "dpll.h"
 
 int main(void)
 {
@@ -28,48 +31,43 @@ int main(void)
 
     print_formula(formula);
 
-    int assignment[4];
+    int *assignment =
+        malloc(sizeof(int) *
+               (formula->variable_count + 1));
 
-    /*
-     * 情况1：全部未赋值
-     */
-    assignment[1] = UNASSIGNED;
-    assignment[2] = UNASSIGNED;
-    assignment[3] = UNASSIGNED;
+    if (assignment == NULL) {
+        free_formula(formula);
+        return 1;
+    }
 
-    printf("\nCase 1: ");
-    
-    FormulaStatus result =
-        is_formula_satisfied(formula, assignment);
+    for (int i = 1;
+         i <= formula->variable_count;
+         i++) {
 
-    if (result == FORMULA_TRUE)
-        printf("TRUE\n");
-    else if (result == FORMULA_FALSE)
-        printf("FALSE\n");
-    else
-        printf("UNKNOWN\n");
+        assignment[i] = UNASSIGNED;
+    }
 
+    printf("\nSolving...\n");
 
-    /*
-     * 情况2：x1=false, x2=true, x3=false
-     */
-    assignment[1] = FALSE_VALUE;
-    assignment[2] = TRUE_VALUE;
-    assignment[3] = FALSE_VALUE;
+    if (dpll(formula, assignment)) {
 
-    printf("Case 2: ");
+        printf("\nSAT!\n");
 
-    result =
-        is_formula_satisfied(formula, assignment);
+        for (int i = 1;
+             i <= formula->variable_count;
+             i++) {
 
-    if (result == FORMULA_TRUE)
-        printf("TRUE\n");
-    else if (result == FORMULA_FALSE)
-        printf("FALSE\n");
-    else
-        printf("UNKNOWN\n");
+            printf("x%d = %d\n",
+                   i,
+                   assignment[i]);
+        }
 
+    } else {
 
+        printf("\nUNSAT!\n");
+    }
+
+    free(assignment);
     free_formula(formula);
 
     return 0;
