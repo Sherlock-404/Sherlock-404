@@ -109,27 +109,49 @@ void free_formula(Formula *formula)
 
 
 //检查子句是否满足
-int is_clause_satisfied(const Clause *clause, const int *assignment){
+ClauseStatus is_clause_satisfied(const Clause *clause, const int *assignment){
+    int has_unassigned = 0;
     for(int i=0;i<clause->size;i++){
         int literal=clause->literals[i];
-        int variable=abs(literal);
-        if ((literal > 0 && assignment[variable] == 1) || (literal < 0 && assignment[variable] == 0)) {
-            return 1; // Clause is satisfied
-        }
+        if(literal>0){
+            if(assignment[literal]==TRUE_VALUE){
+                return CLAUSE_TRUE;
+            }
+            else if(assignment[literal]==UNASSIGNED){
+                has_unassigned=1;
+            }
     }
-    return 0; // Clause is not satisfied
+       else{
+        int variable=-literal;
+        if(assignment[variable]==FALSE_VALUE){
+            return CLAUSE_TRUE;
+        }
+        else if(assignment[variable]==UNASSIGNED){
+            has_unassigned=1;
+        }
+    }  
+ }
+    if(has_unassigned){
+        return CLAUSE_UNKNOWN;
+    }
+    return CLAUSE_FALSE;
 }
 
 
 //检查公式是否满足
-int is_formula_satisfied(const Formula *formula, const int *assignment){
-    if(formula==NULL || assignment==NULL){
-        return 0; // Invalid input
-    }
+FormulaStatus is_formula_satisfied(const Formula *formula, const int *assignment){
+    int has_unknown=0;
     for(int i=0;i<formula->clause_count;i++){
-        if(!is_clause_satisfied(&formula->clauses[i],assignment)){
-            return 0; // Formula is not satisfied
+        ClauseStatus status=is_clause_satisfied(&formula->clauses[i],assignment);
+        if(status==CLAUSE_FALSE){
+            return FORMULA_FALSE;
+        }
+        else if(status==CLAUSE_UNKNOWN){
+            has_unknown=1;
         }
     }
-    return 1; // Formula is satisfied
+    if(has_unknown){
+        return FORMULA_UNKNOWN;
+    }
+    return FORMULA_TRUE;
 }
