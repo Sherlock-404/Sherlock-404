@@ -11,6 +11,11 @@
 
 #include "cnf.h"
 #include "dpll.h"
+#include "sudoku.h"
+#include "sudoku_cnf.h"
+#include "star_sudoku.h"
+#include "sudoku_gen.h"
+#include "sudoku_game.h"
 
 /* 高精度毫秒计时（便于优化率比较；.res 文件中仍按 time.h 的 clock 计时） */
 static double now_ms(void)
@@ -112,6 +117,142 @@ static void solve_file(const char *path, int mode)
     free_formula(formula);
 }
 
+/* 求解数独文件：普通或星形。返回 0 成功，1 失败/无解。 */
+static int solve_sudoku_file(const char *path, int with_star)
+{
+    Sudoku puzzle;
+    if (!sudoku_load(path, &puzzle)) {
+        printf("Failed to load sudoku file: %s\n", path);
+        return 1;
+    }
+    if (!sudoku_valid(&puzzle)) {
+        printf("Invalid sudoku puzzle (row/column/box conflicts).\n");
+        return 1;
+    }
+    if (with_star && !star_sudoku_valid(&puzzle)) {
+        printf("Invalid star sudoku puzzle (star cells conflict).\n");
+        return 1;
+    }
+
+    printf("Loaded puzzle (%d givens).\n", sudoku_filled(&puzzle));
+    sudoku_print(&puzzle);
+
+    Formula *formula = with_star ? star_sudoku_make_cnf(&puzzle)
+                                 : sudoku_make_cnf(&puzzle);
+    if (formula == NULL) {
+        printf("Failed to build CNF.\n");
+        return 1;
+    }
+    printf("CNF built: variables=%d clauses=%d\n",
+           formula->variable_count, formula->clause_count);
+
+    int n = formula->variable_count;
+    int *assignment = (int *)malloc(sizeof(int) * (n + 1));
+    if (assignment == NULL) {
+        free_formula(formula);
+        printf("Memory allocation failed.\n");
+        return 1;
+    }
+    for (int i = 0; i <= n; i++) {
+        assignment[i] = UNASSIGNED;
+    }
+
+    printf("Calling DPLL...\n");
+    clock_t start = clock();
+    int result = dpll(formula, assignment);
+    clock_t end = clock();
+    double ms = (double)(end - start) * 1000.0 / CLOCKS_PER_SEC;
+    printf("DPLL result: %s (%.3f ms)\n", result ? "SAT" : "UNSAT", ms);
+
+    if (!result) {
+        free(assignment);
+        free_formula(formula);
+        return 1;
+    }
+
+    Sudoku solution;
+    if (!sudoku_from_assignment(assignment, &solution)) {
+        printf("Failed to decode SAT assignment.\n");
+        free(assignment);
+        free_formula(formula);
+        return 1;
+    }
+
+    printf("Solution:\n");
+    sudoku_print(&solution);
+    printf("check: normal=%d", sudoku_valid(&solution));
+    if (with_star) {
+        printf(", star=%d", star_sudoku_valid(&solution));
+    }
+    printf("\n");
+
+    free(assignment);
+    free_formula(formula);
+    return 0;
+}
+
+/* 自动生成并显示一道数独（普通/星形） */
+static int generate_sudoku_and_show(int with_star, unsigned int seed)
+{
+    Sudoku puzzle, solution;
+    if (!sudoku_generate(&puzzle, &solution, with_star, 0, seed)) {
+        printf("Generation failed.\n");
+        return 1;
+    }
+
+    printf("Generated puzzle (givens=%d):\n", sudoku_filled(&puzzle));
+    sudoku_print(&puzzle);
+    printf("Unique solution:\n");
+    sudoku_print(&solution);
+    printf("check: normal=%d", sudoku_valid(&solution));
+    if (with_star) {
+        printf(", star=%d", star_sudoku_valid(&solution));
+    }
+    printf("\n");
+    return 0;
+}
+
+/* 数独交互菜单 */
+static void sudoku_menu(void)
+{
+    int choice;
+    char path[1024];
+
+    while (1) {
+        printf("\n========== Sudoku ==========\n");
+        printf("1. Solve normal sudoku\n");
+        printf("2. Solve star sudoku\n");
+        printf("3. Generate normal sudoku\n");
+        printf("4. Generate star sudoku\n");
+        printf("5. Play normal sudoku\n");
+        printf("6. Play star sudoku\n");
+        printf("0. Back\n");
+        printf("=============================\n");
+        printf("Please enter your choice: ");
+
+        if (scanf("%d", &choice) != 1) {
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF) { /* skip */ }
+            continue;
+        }
+        if (choice == 1 || choice == 2) {
+            printf("Please enter sudoku file path: ");
+            scanf("%1023s", path);
+            printf("\n");
+            solve_sudoku_file(path, choice == 2);
+        } else if (choice == 3 || choice == 4) {
+            printf("\n");
+            generate_sudoku_and_show(choice == 4, 0);
+        } else if (choice == 5 || choice == 6) {
+            sudoku_play(choice == 6, 0);
+        } else if (choice == 0) {
+            break;
+        } else {
+            printf("Invalid choice!\n");
+        }
+    }
+}
+
 /* 同一算例下，基准与优化的对比，给出优化率 */
 static void bench_file(const char *path)
 {
@@ -160,6 +301,10 @@ static void print_usage(const char *prog)
     printf("  %s <cnf_file> [mode]      solve one instance; mode 0/1 (default 1)\n",
            prog);
     printf("  %s --bench <cnf_file>     compare baseline vs optimized\n", prog);
+    printf("  %s --sudoku <file> [star]  solve normal/star sudoku puzzle file\n",
+           prog);
+    printf("  %s --sudoku-gen [star] [seed]\n", prog);
+    printf("                  generate & print a normal/star sudoku puzzle\n");
     printf("  (no argument -> interactive menu)\n");
 }
 
@@ -239,6 +384,27 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    if (argc >= 2 && strcmp(argv[1], "--sudoku") == 0) {
+        if (argc < 3) {
+            print_usage(argv[0]);
+            return 1;
+        }
+        int with_star =
+            argc >= 4 && strcmp(argv[3], "star") == 0;
+        return solve_sudoku_file(argv[2], with_star);
+    }
+
+    if (argc >= 2 && strcmp(argv[1], "--sudoku-gen") == 0) {
+        int with_star =
+            argc >= 3 && strcmp(argv[2], "star") == 0;
+        unsigned int seed = 0;
+        int seed_pos = with_star ? 3 : 2;
+        if (argc > seed_pos && atoi(argv[seed_pos]) > 0) {
+            seed = (unsigned int)atoi(argv[seed_pos]);
+        }
+        return generate_sudoku_and_show(with_star, seed);
+    }
+
     if (argc >= 2) {
         int mode = argc >= 3 ? atoi(argv[2]) : DPLL_MODE_OPTIMIZED;
         if (mode != DPLL_MODE_NAIVE && mode != DPLL_MODE_OPTIMIZED) {
@@ -270,7 +436,7 @@ int main(int argc, char *argv[])
         if (choice == 1) {
             sat_menu();
         } else if (choice == 2) {
-            printf("\nAsterisk Sudoku module is under development.\n");
+            sudoku_menu();
         } else if (choice == 0) {
             printf("\nBye!\n");
             break;

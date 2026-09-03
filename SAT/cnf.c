@@ -129,6 +129,59 @@ Formula *load_cnf(const char *filename)
     return formula;
 }
 
+/* 在内存中创建空公式：variable_count 个变元、clause_count 个子句 */
+Formula *formula_new(int variable_count, int clause_count)
+{
+    if (variable_count < 0 || clause_count < 0) {
+        return NULL;
+    }
+
+    Formula *formula = (Formula *)malloc(sizeof(Formula));
+    if (formula == NULL) {
+        return NULL;
+    }
+    formula->variable_count = variable_count;
+    formula->clause_count = clause_count;
+    formula->clauses = NULL;
+
+    if (clause_count > 0) {
+        formula->clauses =
+            (Clause *)calloc((size_t)clause_count, sizeof(Clause));
+        if (formula->clauses == NULL) {
+            free(formula);
+            return NULL;
+        }
+    }
+    return formula;
+}
+
+/* 写入单个子句的文字列表（复制一份，调用方数组可复用） */
+int formula_set_clause(Formula *formula, int clause_index,
+                       const int *literals, int literal_count)
+{
+    if (formula == NULL || clause_index < 0 ||
+        clause_index >= formula->clause_count || literal_count < 0) {
+        return 0;
+    }
+
+    Clause *clause = &formula->clauses[clause_index];
+    clause->literals = NULL;
+    clause->size = 0;
+
+    if (literal_count > 0) {
+        clause->literals =
+            (int *)malloc(sizeof(int) * (size_t)literal_count);
+        if (clause->literals == NULL) {
+            return 0;
+        }
+        for (int i = 0; i < literal_count; i++) {
+            clause->literals[i] = literals[i];
+        }
+        clause->size = literal_count;
+    }
+    return 1;
+}
+
 /* 打印整个公式（用于解析正确性的目测验证） */
 void print_formula(const Formula *formula)
 {

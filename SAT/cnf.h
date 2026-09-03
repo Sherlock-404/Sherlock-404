@@ -40,6 +40,15 @@ typedef struct Formula
 
 Formula *load_cnf(const char *filename);
 
+/* 在内存中创建一个空公式（子句数组已分配但内容为空），
+ * 供数独等模块直接构建 CNF 使用。失败返回 NULL。 */
+Formula *formula_new(int variable_count, int clause_count);
+
+/* 把 literals[0..literal_count-1] 写入第 clause_index 个子句。
+ * 返回 1 成功，0 失败（参数非法或内存不足）。 */
+int formula_set_clause(Formula *formula, int clause_index,
+                       const int *literals, int literal_count);
+
 void print_formula(const Formula *formula);
 
 void free_formula(Formula *formula);
